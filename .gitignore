@@ -1,0 +1,48 @@
+# Local secrets; keep sanitized configuration examples trackable.
+.env
+.env.*
+!.env.example
+!.env.*.example
+*.p8
+*.p12
+*.mobileprovision
+*.certSigningRequest
+
+# JavaScript / Expo dependencies and generated output.
+node_modules/
+.expo/
+dist/
+coverage/
+*.tsbuildinfo
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Apple build output and per-user Xcode settings.
+.build/
+DerivedData/
+Pods/
+*.xcuserstate
+xcuserdata/
+*.ipa
+*.dSYM/
+
+# Android local settings and build output.
+.gradle/
+local.properties
+*.jks
+*.keystore
+android/build/
+android/app/build/
+
+# OS and local editor state.
+.DS_Store
+Thumbs.db
+.vs/
+.vscode/*
+!.vscode/mcp.json
+!.vscode/extensions.json
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json

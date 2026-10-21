@@ -1,0 +1,17 @@
+# Normalize text files to LF on Windows and macOS.
+* text=auto eol=lf
+
+# Windows scripts require CRLF.
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+# Common binary assets.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.pdf binary
+*.ttf binary
+*.woff binary
+*.woff2 binary
