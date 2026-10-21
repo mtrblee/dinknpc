@@ -34,6 +34,7 @@
 - Run npm test for domain tests or npm run test:coverage for coverage. The tests use Node.js 24's built-in test runner and TypeScript stripping; no extra testing dependency is needed.
 - No linter or UI test runner is configured. Do not claim UI or native-device behavior is verified by domain tests.
 - See README.md for startup commands and platform limitations. Update actual commands when tooling changes.
+- npm start is localhost-only. For physical iPhone testing, npm run start:device explicitly enables LAN mode; use a trusted reachable network and matching Expo CLI/Expo Go accounts. Never bypass network controls or expose Metro publicly.
 - Report what was checked and any limitations. Do not claim iOS behavior is verified by web-only tests.
 
 ## Workflow

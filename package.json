@@ -15,6 +15,7 @@
   },
   "scripts": {
     "start": "expo start --localhost",
+    "start:device": "expo start --lan --go",
     "android": "expo start --android --localhost",
     "ios": "expo start --ios --localhost",
     "typecheck": "tsc --noEmit",

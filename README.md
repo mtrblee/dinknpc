@@ -28,7 +28,9 @@ before upgrading. Navigation, persistence, and backend services are not yet sele
 - VS Code or another editor
 - Expo Go on an iPhone for physical-device testing
 
-No Expo account or cloud service is needed for this local starter.
+A free Expo account is required for serving this project to Expo Go on a
+physical iPhone. Expo CLI and Expo Go must be signed in to the same account.
+No paid Expo plan or cloud build service is needed for this starter.
 
 ## Install and run
 
@@ -39,18 +41,47 @@ npm ci
 npm start
 ```
 
-The default development server binds to localhost. For an iPhone on the same
-trusted Wi-Fi network, stop the server and explicitly enable local-network access:
+The default development server binds to localhost and cannot be reached from
+your iPhone. For a physical iPhone, stop that server, sign in to Expo CLI, and
+explicitly enable local-network access:
 
 ```powershell
-npx expo start --lan
+npx expo login
+npm run start:device
 ```
 
-Scan the terminal QR code with the iPhone camera and open it in Expo Go. Your
-phone must be able to reach your computer; VPNs and Windows Firewall can block
-the connection. Do not disable the firewall or expose the development server
-to the public internet. The LAN server serves development code to reachable
-devices, so use it only on a trusted network.
+Sign in to Expo Go on your iPhone with the same Expo account, then scan the
+terminal QR code with the iPhone camera. GitHub sign-in is separate from Expo
+sign-in. Use `npx expo whoami` to check the CLI account; do not put credentials
+in source files or chat.
+
+Your phone must be able to reach your computer on the same trusted local
+network. A computer connected by Ethernet is fine if the network permits
+communication with Wi-Fi devices. The LAN server serves development code to
+reachable devices, so use it only on a trusted network.
+
+### Troubleshooting an iPhone timeout
+
+1. Keep the terminal running and use the QR code from `npm run start:device`,
+   not from the localhost-only command.
+2. Check the host in the printed `exp://HOST:PORT` URL. It must be a computer
+   address reachable from the phone, not `localhost`, `127.0.0.1`, or an
+   isolated virtual-machine address.
+3. On the iPhone, open `http://HOST:PORT/status` in Safari using that same host
+   and port. Metro should respond with `packager-status:running`. If Safari
+   also times out, fix network reachability before investigating app code.
+4. A VM, remote workstation, guest Wi-Fi, VPN, or network policy may isolate
+   the phone from Metro. Prefer running Expo on the physical computer on the
+   same trusted network as the phone. Changing the advertised address alone
+   does not create a route to an isolated VM.
+5. If iOS shows a local-network permission for Expo Go, allow it for your
+   trusted network. If this is a managed network, ask its administrator about
+   device-to-device access rather than weakening its controls.
+
+Do not disable Windows Firewall, change a public network to private just to
+bypass restrictions, forward router ports, or expose Metro through a public
+tunnel. A successful Safari status response proves basic reachability, not
+Expo account or SDK compatibility; those are separate checks.
 
 Windows cannot run Apple's iOS Simulator or compile native iOS builds locally.
 On a Mac with Xcode and its simulator installed, use:
