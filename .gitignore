@@ -12,6 +12,12 @@
 node_modules/
 .expo/
 dist/
+web-build/
+expo-env.d.ts
+.metro-health-check*
+/ios/
+/android/
+.kotlin/
 coverage/
 *.tsbuildinfo
 npm-debug.log*
