@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" role="img" aria-labelledby="title description">
+  <title id="title">DinkNow</title>
+  <desc id="description">A rounded burnt-orange D with three negative-space holes inspired by a pickleball.</desc>
+  <path fill="#A54516" fill-rule="evenodd" d="
+    M120 72
+    H236
+    C350 72 424 147 424 256
+    C424 365 350 440 236 440
+    H120
+    C102 440 88 426 88 408
+    V104
+    C88 86 102 72 120 72
+    Z
+    M176 156
+    V356
+    H233
+    C294 356 336 316 336 256
+    C336 196 294 156 233 156
+    Z
+    M356 145
+    A13 13 0 1 0 330 145
+    A13 13 0 1 0 356 145
+    Z
+    M394 256
+    A13 13 0 1 0 368 256
+    A13 13 0 1 0 394 256
+    Z
+    M356 367
+    A13 13 0 1 0 330 367
+    A13 13 0 1 0 356 367
+    Z
+  "/>
+</svg>

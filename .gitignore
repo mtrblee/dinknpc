@@ -7,6 +7,9 @@
 *.p12
 *.mobileprovision
 *.certSigningRequest
+credentials.json
+*.pem
+*.key
 
 # JavaScript / Expo dependencies and generated output.
 node_modules/
@@ -19,6 +22,11 @@ expo-env.d.ts
 /android/
 .kotlin/
 coverage/
+/api/dist/
+/api/deploy/
+/api/deploy.zip
+/infra/main.json
+/api/local.settings.json
 *.tsbuildinfo
 npm-debug.log*
 yarn-debug.log*

@@ -1,0 +1,27 @@
+{
+  "name": "dinknow-api",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "main": "dist/api/src/functions.js",
+  "engines": {
+    "node": ">=24 <25"
+  },
+  "scripts": {
+    "build": "tsc",
+    "typecheck": "tsc --noEmit",
+    "test": "node --test src/api.test.mjs src/groupSummaries.test.mjs src/groupRolesStore.test.mjs src/tournamentApi.test.mjs src/accountDeletion.test.mjs scripts/sqlIdentity.test.mjs scripts/guestNames.test.mjs",
+    "migrate": "node scripts/migrate.mjs",
+    "test:sql": "node --test --test-concurrency=1 src/sql.integration.test.mjs src/tournaments.sql.test.mjs src/guests.sql.test.mjs src/groupOptions.sql.test.mjs src/groupAdmins.sql.test.mjs src/accountLifecycle.sql.test.mjs"
+  },
+  "dependencies": {
+    "@azure/functions": "^4.16.5",
+    "@azure/identity": "^4.14.0",
+    "mssql": "^12.7.6"
+  },
+  "devDependencies": {
+    "@types/mssql": "^12.3.0",
+    "@types/node": "^24.19.2",
+    "typescript": "~6.0.3"
+  }
+}

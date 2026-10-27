@@ -1,0 +1,32 @@
+{
+  "cli": {
+    "version": ">=25.1.1",
+    "appVersionSource": "local"
+  },
+  "build": {
+    "development": {
+      "developmentClient": true,
+      "distribution": "internal",
+      "environment": "development",
+      "ios": {
+        "simulator": false
+      }
+    },
+    "beta": {
+      "developmentClient": false,
+      "distribution": "store",
+      "environment": "preview",
+      "autoIncrement": true,
+      "ios": {
+        "simulator": false
+      }
+    }
+  },
+  "submit": {
+    "beta": {
+      "ios": {
+        "ascAppId": "6826646735"
+      }
+    }
+  }
+}

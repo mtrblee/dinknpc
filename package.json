@@ -1,16 +1,22 @@
 {
-  "name": "dinknpc",
-  "version": "1.0.0",
+  "name": "dinknow",
+  "version": "1.0.1",
   "type": "module",
   "main": "index.ts",
   "dependencies": {
-    "expo": "~57.0.28",
-    "expo-status-bar": "~57.0.1",
-    "react": "19.2.3",
-    "react-native": "0.86.3"
+    "@supabase/supabase-js": "2.117.3",
+    "expo": "~58.0.11",
+    "expo-clipboard": "~58.0.3",
+    "expo-crypto": "~58.0.6",
+    "expo-dev-client": "~58.0.13",
+    "expo-secure-store": "~58.0.2",
+    "expo-status-bar": "~58.0.3",
+    "react": "19.3.0",
+    "react-native": "0.88.0",
+    "react-native-url-polyfill": "^4.0.0"
   },
   "devDependencies": {
-    "@types/react": "~19.2.2",
+    "@types/react": "~19.3.0",
     "typescript": "~6.0.3"
   },
   "scripts": {
@@ -18,9 +24,10 @@
     "start:device": "expo start --lan --go",
     "android": "expo start --android --localhost",
     "ios": "expo start --ios --localhost",
-    "typecheck": "tsc --noEmit",
-    "test": "node --test src/domain/groups.test.mjs",
-    "test:coverage": "node --experimental-test-coverage --test-coverage-include=src/domain/groups.ts --test src/domain/groups.test.mjs"
+    "typecheck": "tsc --noEmit && npm --prefix api run typecheck",
+    "test": "node --test src/domain/avatars.test.mjs src/domain/groups.test.mjs src/domain/groupRoles.test.mjs src/domain/individualStats.test.mjs src/domain/tournaments.test.mjs src/domain/accountDeletion.test.mjs src/domain/timestamps.test.mjs src/features/groups/playoffBracketLayout.test.mjs src/services/auth.test.mjs src/services/supabaseAuth.test.mjs src/services/passwordRecovery.test.mjs src/services/playerDirectory.test.mjs src/services/playerProfile.test.mjs src/services/groupsApi.test.mjs src/services/groupCache.test.mjs && npm --prefix api test",
+    "test:coverage": "node --experimental-test-coverage --test-coverage-include=src/domain/avatars.ts --test-coverage-include=src/domain/groupAvatars.ts --test-coverage-include=src/domain/groups.ts --test-coverage-include=src/domain/groupRoles.ts --test-coverage-include=src/domain/individualStats.ts --test-coverage-include=src/domain/tournaments.ts --test-coverage-include=src/domain/rotatingSchedule.ts --test-coverage-include=src/domain/accountDeletion.ts --test-coverage-include=src/domain/timestamps.ts --test-coverage-include=src/features/groups/playoffBracketLayout.ts --test-coverage-include=src/services/auth.ts --test-coverage-include=src/services/supabaseAuth.ts --test-coverage-include=src/services/passwordRecovery.ts --test-coverage-include=src/services/playerDirectory.ts --test-coverage-include=src/services/playerProfile.ts --test-coverage-include=src/services/groupsApi.ts --test-coverage-include=src/services/groupCache.ts --test-coverage-include=api/src/api.ts --test-coverage-include=api/src/identity.ts --test-coverage-include=api/src/contracts.ts --test-coverage-include=api/src/accountDeletion.ts --test src/domain/avatars.test.mjs src/domain/groups.test.mjs src/domain/groupRoles.test.mjs src/domain/individualStats.test.mjs src/domain/tournaments.test.mjs src/domain/accountDeletion.test.mjs src/domain/timestamps.test.mjs src/features/groups/playoffBracketLayout.test.mjs src/services/auth.test.mjs src/services/supabaseAuth.test.mjs src/services/passwordRecovery.test.mjs src/services/playerDirectory.test.mjs src/services/playerProfile.test.mjs src/services/groupsApi.test.mjs src/services/groupCache.test.mjs api/src/api.test.mjs api/src/groupSummaries.test.mjs api/src/groupRolesStore.test.mjs api/src/tournamentApi.test.mjs api/src/accountDeletion.test.mjs api/scripts/sqlIdentity.test.mjs",
+    "start:dev-client": "expo start --lan --dev-client"
   },
   "private": true
 }

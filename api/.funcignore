@@ -1,0 +1,6 @@
+src/
+scripts/
+sql/
+*.test.mjs
+tsconfig.json
+node_modules/@types/

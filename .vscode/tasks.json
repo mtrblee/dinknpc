@@ -1,0 +1,62 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Expo: iPhone (LAN)",
+			"type": "shell",
+			"command": "$env:Path = 'C:\\Program Files\\nodejs;' + $env:Path; $env:CI = $null; & 'C:\\Program Files\\nodejs\\npm.cmd' run start:device -- --port 8081",
+			"isBackground": true,
+			"problemMatcher": []
+		},
+		{
+			"label": "Expo: iPhone development client (LAN)",
+			"type": "shell",
+			"command": "$env:Path = 'C:\\Program Files\\nodejs;' + $env:Path; $env:CI = $null; & 'C:\\Program Files\\nodejs\\npm.cmd' run start:dev-client -- --port 8082",
+			"isBackground": true,
+			"problemMatcher": []
+		},
+		{
+			"label": "EAS: iPhone development build",
+			"type": "shell",
+			"command": "$env:Path = 'C:\\Program Files\\nodejs;' + $env:Path; $env:CI = $null; $env:EAS_NO_VCS = '1'; $env:EAS_PROJECT_ROOT = (Get-Location).Path; & 'C:\\Program Files\\nodejs\\npx.cmd' --yes eas-cli@25.1.1 build --platform ios --profile development",
+			"isBackground": false,
+			"problemMatcher": [],
+			"presentation": {
+				"reveal": "always",
+				"focus": true,
+				"panel": "dedicated"
+			}
+		},
+		{
+			"label": "EAS: iPhone TestFlight beta build",
+			"type": "shell",
+			"command": "$env:Path = 'C:\\Program Files\\nodejs;' + $env:Path; $env:CI = $null; $env:EAS_NO_VCS = '1'; $env:EAS_PROJECT_ROOT = (Get-Location).Path; & 'C:\\Program Files\\nodejs\\npx.cmd' --yes eas-cli@25.1.1 build --platform ios --profile beta",
+			"isBackground": false,
+			"problemMatcher": [],
+			"presentation": {
+				"reveal": "always",
+				"focus": true,
+				"panel": "dedicated"
+			}
+		},
+		{
+			"label": "EAS: Submit verified TestFlight beta",
+			"type": "shell",
+			"command": "$env:Path = 'C:\\Program Files\\nodejs;' + $env:Path; $env:CI = $null; $env:EAS_NO_VCS = '1'; $env:EAS_PROJECT_ROOT = (Get-Location).Path; & 'C:\\Program Files\\nodejs\\npx.cmd' --yes eas-cli@25.1.1 submit --platform ios --profile beta --id '${input:testflightBuildId}'",
+			"isBackground": false,
+			"problemMatcher": [],
+			"presentation": {
+				"reveal": "always",
+				"focus": true,
+				"panel": "dedicated"
+			}
+		}
+	],
+	"inputs": [
+		{
+			"id": "testflightBuildId",
+			"type": "promptString",
+			"description": "Verified FINISHED iOS beta build UUID (store distribution, not a development build)"
+		}
+	]
+}

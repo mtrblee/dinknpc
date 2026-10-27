@@ -1,4 +1,14 @@
-import type { Game, Group, Standing, Team } from '../types/groups.ts';
+import type { Game, Group, GroupCurrency, Player, Standing, Team } from '../types/groups.ts';
+import type { Tournament } from '../types/tournaments.ts';
+import { validateAvatar } from './avatars.ts';
+import { DEFAULT_GROUP_AVATAR, validateGroupAvatar } from './groupAvatars.ts';
+import type { GroupAvatarId } from './groupAvatars.ts';
+
+export const CURRENCY_OPTIONS = [
+  { id: 'none', label: 'None' },
+  { id: 'money', label: '\u{1F4B5} Money' },
+  { id: 'boba', label: '\u{1F9CB} Boba' },
+] as const;
 
 export class ValidationError extends Error {
   constructor(message: string) {
@@ -19,7 +29,16 @@ function sameName(left: string, right: string): boolean {
   return left.toLowerCase() === right.toLowerCase();
 }
 
-export function createGroup(groups: readonly Group[], name: string): Group {
+export function validateCurrency(value: unknown): GroupCurrency {
+  const currency = CURRENCY_OPTIONS.find((entry) => entry.id === value);
+  if (!currency) throw new ValidationError('Choose None, Money, or Boba as the group currency.');
+  return currency.id;
+}
+
+export function createGroup(
+  groups: readonly Pick<Group, 'name'>[], name: string,
+  currency: GroupCurrency = 'none', avatar: GroupAvatarId = DEFAULT_GROUP_AVATAR,
+): Group {
   const trimmed = cleanName(name);
   if (groups.some((group) => sameName(group.name, trimmed))) {
     throw new ValidationError('A group with that name already exists.');
@@ -27,28 +46,107 @@ export function createGroup(groups: readonly Group[], name: string): Group {
   return {
     id: `group-${groups.length + 1}`,
     name: trimmed,
+    currency: validateCurrency(currency),
+    avatar: validateGroupAvatar(avatar),
     players: [],
     games: [],
     nextGameNumber: 1,
   };
 }
 
-export function addPlayer(group: Group, name: string): Group {
-  const trimmed = cleanName(name);
-  if (group.players.some((player) => sameName(player.name, trimmed))) {
-    throw new ValidationError('A player with that name is already in this group.');
+export function validatePlayerId(value: string): string {
+  const id = value.trim().toLowerCase();
+  if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/.test(id)) {
+    throw new ValidationError('Enter the full player ID shared by a registered player.');
   }
-  const player = { id: `${group.id}-player-${group.players.length + 1}`, name: trimmed };
+  return id;
+}
+
+export const PLAYER_CODE_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+
+export function validatePlayerCode(value: string): string {
+  const code = value.trim();
+  if (!/^[ABCDEFGHJKLMNPQRSTUVWXYZ23456789]{6}$/i.test(code)) {
+    throw new ValidationError('Enter a six-character player code using letters and numbers (no I, O, 0, or 1).');
+  }
+  return code.toUpperCase();
+}
+
+export function validatePlayerReference(value: string): string {
+  return value.trim().length === 36 ? validatePlayerId(value) : validatePlayerCode(value);
+}
+
+export function addPlayer(group: Group, registeredPlayer: Player): Group {
+  if (registeredPlayer.isDeleted) throw new ValidationError('Deleted players cannot join groups.');
+  if (registeredPlayer.isGuest) throw new ValidationError('Guests must be added by name, not by account ID.');
+  return appendPlayer(group, registeredPlayer);
+}
+
+export function addGuestPlayer(group: Group, id: string, name: string): Group {
+  const trimmed = cleanName(name);
+  if (group.players.some((player) => player.isGuest && sameName(player.name.trim(), trimmed))) {
+    throw new ValidationError('A guest with that name already exists in this group.');
+  }
+  return appendPlayer(group, { id, name: trimmed, isGuest: true });
+}
+
+export function removePlayer(group: Group, playerId: string, tournaments: readonly Tournament[]): Group {
+  const id = validatePlayerId(playerId);
+  if (!group.players.some((player) => player.id === id)) {
+    throw new ValidationError('This player is no longer in the group. Refresh the roster.');
+  }
+  if (group.games.some((game) => [...game.teamA, ...game.teamB].includes(id)) ||
+      tournaments.some((tournament) => tournament.teams.some((team) => team.players.includes(id)))) {
+    throw new ValidationError('This player cannot be removed because they appear in a game or tournament.');
+  }
+  return { ...group, players: group.players.filter((player) => player.id !== id) };
+}
+
+function appendPlayer(group: Group, entry: Player): Group {
+  const id = validatePlayerId(entry.id);
+  const name = cleanName(entry.name);
+  if (group.players.some((player) => player.id === id)) {
+    throw new ValidationError(entry.isGuest ? 'This guest is already in the group.' : 'This account is already in the group.');
+  }
+  const player: Player = { id, name,
+    ...(entry.code === undefined || entry.isGuest ? {} : { code: validatePlayerCode(entry.code) }),
+    ...(entry.isGuest ? { isGuest: true } : {}),
+    ...(entry.avatar === undefined ? {} : { avatar: validateAvatar(entry.avatar) }) };
   return { ...group, players: [...group.players, player] };
 }
 
-export function parseWager(value: string): number {
-  const trimmed = value.trim();
-  if (!/^\d+(?:\.\d{1,2})?$/.test(trimmed)) {
-    throw new ValidationError('Enter a wager in USD, such as 0, 5, or 5.25.');
+export function getPlayerDisplayName(player: Player): string {
+  if (player.isDeleted) return 'Deleted player';
+  return player.isGuest ? `(g) ${player.name}` : player.name;
+}
+
+export function getPlayerLabel(group: Group, player: Player): string {
+  const name = getPlayerDisplayName(player);
+  const matchingName = group.players.some((other) => other.id !== player.id && sameName(getPlayerDisplayName(other), name));
+  return matchingName ? `${name} (${getPlayerReference(player)})` : name;
+}
+
+export function getPlayerReference(player: Player): string {
+  return !player.isGuest && !player.isDeleted && player.code ? player.code : player.id;
+}
+
+export function parseWager(value: string, currency: GroupCurrency): number {
+  validateCurrency(currency);
+  const trimmed = value.trim() || '0';
+  if (currency === 'none') {
+    if (!/^0+(?:\.0+)?$/.test(trimmed)) throw new ValidationError('This group does not use simulated wagers.');
+    return 0;
   }
-  const [dollars, fraction = ''] = trimmed.split('.');
-  const cents = Number(dollars) * 100 + Number(fraction.padEnd(2, '0'));
+  if (currency === 'boba') {
+    if (!/^\d+$/.test(trimmed)) throw new ValidationError('Enter a whole number of bobas, such as 0, 1, or 2.');
+    const units = Number(trimmed);
+    if (!Number.isSafeInteger(units)) throw new ValidationError('The wager is too large to track precisely.');
+    return units;
+  }
+  if (!/^\d+$/.test(trimmed)) {
+    throw new ValidationError('Enter whole dollars only: 0 for no wager, or at least 1. Cents are not allowed.');
+  }
+  const cents = Number(trimmed) * 100;
   if (!Number.isSafeInteger(cents)) {
     throw new ValidationError('The wager is too large to track precisely.');
   }
@@ -80,17 +178,34 @@ export function startGame(
   teamBIds: readonly string[],
   wager: string,
 ): Group {
+  if ([...teamAIds, ...teamBIds].some((id) => group.players.some((player) => player.id === id && player.isDeleted))) {
+    throw new ValidationError('Deleted players cannot be selected for new games.');
+  }
+  return allocateDoublesGame(group, teamAIds, teamBIds, wager);
+}
+
+// Existing fixed tournaments may continue with anonymous participants; new setups use startGame.
+export function allocateDoublesGame(
+  group: Group,
+  teamAIds: readonly string[],
+  teamBIds: readonly string[],
+  wager: string,
+): Group {
+  if (!Number.isSafeInteger(group.nextGameNumber) || group.nextGameNumber < 1 ||
+      group.nextGameNumber >= Number.MAX_SAFE_INTEGER) {
+    throw new ValidationError('This group cannot safely allocate another game number.');
+  }
   const teamA = validateTeam(group, teamAIds);
   const teamB = validateTeam(group, teamBIds);
   if (new Set([...teamA, ...teamB]).size !== 4) {
     throw new ValidationError('A doubles game requires four distinct players.');
   }
-  const wagerCents = parseWager(wager);
+  const wagerUnits = parseWager(wager, group.currency);
   const game: Game = {
     id: `${group.id}-game-${group.nextGameNumber}`,
     teamA,
     teamB,
-    wagerCents,
+    wagerUnits,
     status: 'pending',
   };
   return {
@@ -140,11 +255,20 @@ function addPrecisely(left: number, right: number): number {
 }
 
 export function getStandings(group: Group): readonly Standing[] {
+  validateCurrency(group.currency);
+  for (const game of group.games) {
+    if (!Number.isSafeInteger(game.wagerUnits) || game.wagerUnits < 0) {
+      throw new ValidationError('Wagers must use nonnegative safe integer units.');
+    }
+    if (game.wagerUnits !== 0 && (group.currency === 'none' || game.tournament)) {
+      throw new ValidationError('This group or tournament does not allow simulated wagers.');
+    }
+  }
   const rows = group.players.map((player) => {
     let wins = 0;
     let losses = 0;
     let pointDifferential = 0;
-    let moneyCents = 0;
+    let netUnits = 0;
     for (const game of group.games) {
       if (game.status !== 'completed') continue;
       const onA = game.teamA.includes(player.id);
@@ -155,9 +279,9 @@ export function getStandings(group: Group): readonly Standing[] {
       wins += won ? 1 : 0;
       losses += won ? 0 : 1;
       pointDifferential = addPrecisely(pointDifferential, difference);
-      moneyCents = addPrecisely(moneyCents, won ? game.wagerCents : -game.wagerCents);
+      netUnits = addPrecisely(netUnits, won ? game.wagerUnits : -game.wagerUnits);
     }
-    return { player, wins, losses, pointDifferential, moneyCents, rank: null };
+    return { player, wins, losses, pointDifferential, netUnits, rank: null };
   });
   rows.sort((left, right) => {
     const leftPlayed = left.wins + left.losses > 0;
@@ -181,8 +305,23 @@ export function formatMoney(cents: number): string {
   if (!Number.isSafeInteger(cents)) {
     throw new ValidationError('Money must be represented as safe integer cents.');
   }
+
   const absolute = Math.abs(cents);
   const dollars = Math.floor(absolute / 100);
   const remainder = String(absolute % 100).padStart(2, '0');
   return `${cents < 0 ? '-' : ''}$${dollars}.${remainder}`;
+}
+
+export function currencySymbol(currency: Exclude<GroupCurrency, 'none'>): string {
+  if (currency === 'money') return '\u{1F4B5}';
+  if (currency === 'boba') return '\u{1F9CB}';
+  throw new ValidationError('This currency has no simulated amounts.');
+}
+
+export function formatUnits(units: number, currency: Exclude<GroupCurrency, 'none'>): string {
+  if (currency === 'money') return formatMoney(units);
+  if (currency !== 'boba' || !Number.isSafeInteger(units)) {
+    throw new ValidationError('Boba must be represented as safe whole-number units.');
+  }
+  return String(units);
 }
